@@ -1,0 +1,2 @@
+﻿
+Server=localhost;Database=bestbuy;uid=root;PWD=pasword

@@ -9,7 +9,7 @@ namespace Model1
 {
     public class CategoryRepository
     {
-        private static string connectionString = "Server=localhost;Database=bestbuy;uid=root;PWD=pasword";
+        private static string connectionString = System.IO.File.ReadAllText("ConnectionString.txt");
 
         public List<Category> GetCategories()
         {

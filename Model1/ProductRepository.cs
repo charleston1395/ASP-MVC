@@ -9,7 +9,7 @@ namespace Model1
 {
     public class ProductRepository
     {
-        private static string connectionString = "Server=localhost;Database=bestbuy;uid=root;PWD=pasword";
+        private static string connectionString =System.IO.File.ReadAllText("ConnectionString.txt");
 
         public List<Product> GetAllProducts()
         {
@@ -58,8 +58,17 @@ namespace Model1
                     product.Name = reader.GetString("Name");
                     product.Price = reader.GetDecimal("Price");
                     product.CategoryID = reader.GetInt32("OnSale");
-                    product.StockLevel = reader.GetString("StockLevel");
+                    
 
+                    if (reader.IsDBNull(reader.GetOrdinal("StockLevel") ) )
+
+                    {
+                        product.StockLevel = null; 
+                    }
+                    else
+                    {
+                        product.StockLevel = reader.GetString("StockLevel");
+                    }
 
 
                 }
@@ -100,7 +109,7 @@ namespace Model1
             MySqlConnection conn = new MySqlConnection(connectionString);
 
             MySqlCommand cmd = conn.CreateCommand();
-            cmd.CommandText = "UPDATE products SET Name = @name, Price = @price WHERE ProductID";
+            cmd.CommandText = "UPDATE products SET Name = @name, Price = @price WHERE ProductID = @id";
             cmd.Parameters.AddWithValue("name", productToUpdate.Name);
             cmd.Parameters.AddWithValue("price", productToUpdate.Price);
             cmd.Parameters.AddWithValue("id", productToUpdate.ID);
@@ -118,7 +127,7 @@ namespace Model1
             MySqlConnection conn = new MySqlConnection(connectionString);
 
             MySqlCommand cmd = conn.CreateCommand();
-            cmd.CommandText = "INSERT INTO products (NAME, PRICE CATEGORYID) VALUES (@name, @price, categoryID);";
+            cmd.CommandText = "INSERT INTO products (NAME, PRICE, CATEGORYID) VALUES (@name, @price, @categoryID);";
 
             cmd.Parameters.AddWithValue("name", productToInsert.Name);
             cmd.Parameters.AddWithValue("price", productToInsert.Price);
@@ -130,6 +139,70 @@ namespace Model1
                 cmd.ExecuteNonQuery();
             }
 
+        }
+
+        public Product AssignCategories()
+        {
+            var catRepo = new CategoryRepository();
+
+            var catList = catRepo.GetCategories();
+
+            Product product = new Product();
+            product.Categories = catList;
+
+            return product;
+        }
+
+        public void DeleteProduct(int id)
+        {
+            MySqlConnection conn = new MySqlConnection(connectionString);
+
+            MySqlCommand cmd = conn.CreateCommand();
+            cmd.CommandText = "DELETE FROM products WHERE ProductID = @id";
+            cmd.Parameters.AddWithValue("id", id);
+
+            using (conn)
+            {
+                conn.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public void DeleteProductFromSales(int id)
+        {
+            MySqlConnection conn = new MySqlConnection(connectionString);
+
+            MySqlCommand cmd = conn.CreateCommand();
+            cmd.CommandText = "DELETE FROM sales WHERE ProductID = @id";
+            cmd.Parameters.AddWithValue("id", id);
+
+            using (conn)
+            {
+                conn.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public void DeleteProductFromReviews(int id)
+        {
+            MySqlConnection conn = new MySqlConnection(connectionString);
+
+            MySqlCommand cmd = conn.CreateCommand();
+            cmd.CommandText = "DELETE FROM reviews WHERE ProductID = @id";
+            cmd.Parameters.AddWithValue("id", id);
+
+            using (conn)
+            {
+                conn.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public void DeleteProductFromAllTables(int productID)
+        {
+            DeleteProductFromSales(productID);
+            DeleteProductFromReviews(productID);
+            DeleteProduct(productID);
         }
 
 

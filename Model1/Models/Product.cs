@@ -18,6 +18,7 @@ namespace Model1.Models
     public int OnSale { get; set; }
     public string StockLevel { get; set; }
     public int CategoryID { get; set; }
+    public List<Category> Categories { get; set; }
 
     }
 
